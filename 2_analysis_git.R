@@ -28,7 +28,7 @@ sgdata.amph.sem$species <- as.factor(sgdata.amph.sem$species)
 
 # Scale & center variables:
 sgdata.amph.sem$genetic_diversity <- scale(sgdata.amph.sem$gene_diversity)
-sgdata.amph.sem$species_richness <- scale(sgdata.amph.sem$poplvlsd)
+sgdata.amph.sem$species_richness <- scale(sgdata.amph.sem$site_SR)
 
 # AET scales
 sgdata.amph.sem$water_10 <- scale(sgdata.amph.sem$AET_10)
@@ -134,11 +134,11 @@ moran.test(SRres, nb2listw(nb1)) # Yes, but low: 0.05
 # Check for linear gradient
 amphxy <- select(sgdata.amph.sem, lon, lat)
 anova(lm(sgdata.amph.sem$gene_diversity ~ ., data=amphxy)) #yes
-anova(lm(sgdata.amph.sem$poplvlsd ~ ., data=amphxy)) #yes
+anova(lm(sgdata.amph.sem$site_SR ~ ., data=amphxy)) #yes
 
 # Detrend data
 amph.det.gd  <-  resid(lm(sgdata.amph.sem$gene_diversity ~ .,   data=amphxy)) # gene diversity
-amph.det.sp  <-  resid(lm(sgdata.amph.sem$poplvlsd ~ ., data=amphxy)) # species richness
+amph.det.sp  <-  resid(lm(sgdata.amph.sem$site_SR ~ ., data=amphxy)) # species richness
 
 # Construct the matrix of dbMEM variables
 # dbMEM
@@ -180,10 +180,10 @@ shared <- amph.dbmem[,shared.df]
 
 ## Variation partitioning ##
 gd_mem <- lm(scale(sgdata.amph.sem$gene_diversity) ~., data= GDmem.red)
-sp_mem <- lm(scale(sgdata.amph.sem$poplvlsd) ~., data = SPmem.red)
+sp_mem <- lm(scale(sgdata.amph.sem$site_SR) ~., data = SPmem.red)
 
 shareGD <- lm(scale(sgdata.amph.sem$gene_diversity) ~., data= shared) ## same as gd_mem because all GD MEMs are shared
-shareSR <- lm(scale(sgdata.amph.sem$poplvlsd) ~., data= shared)
+shareSR <- lm(scale(sgdata.amph.sem$site_SR) ~., data= shared)
 
 
 ## Plot ##
@@ -233,7 +233,7 @@ smem.broad <- amph.dbmem[,SPmems[c(1:length(morani_sp))]]
 fit <- lm(scale(sgdata.amph.sem$gene_diversity)~gmem.broad) 
 fittedGD <- predict(fit)
 
-fitsp <- lm(scale(sgdata.amph.sem$poplvlsd)~., data = smem.broad)
+fitsp <- lm(scale(sgdata.amph.sem$site_SR)~., data = smem.broad)
 fittedSP <- predict(fitsp)
 
 
@@ -262,7 +262,7 @@ st_geometry(canadausa[2,]) <- st_geometry(USA_nohic)
 
 # Convert data to sf for plot:
 plotdata <- sgdata.amph.sem %>% 
-  select(lon, lat, gene_diversity, poplvlsd) %>% 
+  select(lon, lat, gene_diversity, site_SR) %>% 
   mutate(fittedGD = fittedGD,
          fittedSP = fittedSP)
 plotdata <- st_as_sf(plotdata, coords = c('lon', 'lat'), crs = 4326)
@@ -448,7 +448,7 @@ spraw <- ggplot() +
   xlab("") + #remove x-axis label
   ylab("") + #remove y-axis label
   theme(panel.background = element_blank()) +  #remove grey background
-  geom_sf(data = plotdata, aes(color = poplvlsd), size=2) +
+  geom_sf(data = plotdata, aes(color = site_SR), size=2) +
   scale_color_viridis(option = "D") +
   labs(title = "Species richness",
        color = "") +
